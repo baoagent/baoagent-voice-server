@@ -1,0 +1,28 @@
+# BaoAgent LLM Server
+# Virtual Environment
+venv/
+*.pyc
+__pycache__/
+.env
+.DS_Store
+
+# Models (downloaded at runtime)
+models/*.bin
+models/*.safetensors
+models/*.json
+models/*.txt
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
