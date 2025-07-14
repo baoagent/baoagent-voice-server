@@ -8,7 +8,7 @@ if ! command -v ollama &> /dev/null; then
 fi
 
 # List available models
-AVAILABLE_MODELS=("smollm2:1.7b" "mistral:7b" "gemma3n:e4b" "qwen3:8b" "gemma3:4b" "gemma3:12b-it-qat" "deepseek-r1:8b")
+AVAILABLE_MODELS=("smollm2:1.7b" "gemma3n:e4b" "qwen3:8b" "gemma3:4b" "gemma3:12b-it-qat" "deepseek-r1:8b")
 echo "🤖 BaoAgent LLM Server (Ollama Edition)"
 echo "Available models:"
 for i in "${!AVAILABLE_MODELS[@]}"; do

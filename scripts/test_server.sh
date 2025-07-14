@@ -10,8 +10,9 @@ if curl -s http://localhost:11434/api/tags > /dev/null; then
     # Test generate endpoint
     echo "Testing generate endpoint..."
     curl -s http://localhost:11434/api/generate -d '{
-        "model": "deepseek-r1:8b",
-        "prompt": "Hello from BaoAgent!"
+        "model": "gemma3:12b-it-qat",
+        "prompt": "Hello from BaoAgent!",
+        "stream": false
     }'
     echo
 else
