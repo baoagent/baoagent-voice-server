@@ -1,42 +1,28 @@
 #!/bin/bash
-# Start the BaoAgent LLM server with model selection
+# Start the BaoAgent LLM server using Ollama
 
-# Check if virtual environment exists
-if [ ! -d "venv" ]; then
-    echo "❌ Virtual environment not found. Run ./setup.sh first"
+# Check if Ollama is installed
+if ! command -v ollama &> /dev/null; then
+    echo "❌ Ollama is not installed. Install it from https://ollama.com/download or run: curl -fsSL https://ollama.com/install.sh | sh"
     exit 1
 fi
 
-# Activate virtual environment
-source venv/bin/activate
-
-echo "🤖 BaoAgent LLM Server"
+# List available models
+AVAILABLE_MODELS=("smollm2:1.7b" "mistral:7b" "gemma3n:e4b" "qwen3:8b" "gemma3:4b" "gemma3:12b-it-qat" "deepseek-r1:8b")
+echo "🤖 BaoAgent LLM Server (Ollama Edition)"
 echo "Available models:"
-echo "1. Mistral 7B Instruct (default) - Great all-around model"
-echo "2. Code Llama 7B - Best for coding tasks"
-echo "3. Llama 2 7B Chat - Meta's model"
-echo "4. DeepSeek Coder 6.7B - Chinese model, excellent for coding"
+for i in "${!AVAILABLE_MODELS[@]}"; do
+    echo "$((i+1)). ${AVAILABLE_MODELS[$i]}"
+done
 
-read -p "Choose model (1-4, default: 1): " choice
+read -p "Choose model (1-${#AVAILABLE_MODELS[@]}, default: 1): " choice
 
-case $choice in
-    1|"")
-        MODEL="mistralai/Mistral-7B-Instruct-v0.1"
-        ;;
-    2)
-        MODEL="codellama/CodeLlama-7b-Instruct-hf"
-        ;;
-    3)
-        MODEL="meta-llama/Llama-2-7b-chat-hf"
-        ;;
-    4)
-        MODEL="deepseek-ai/deepseek-coder-6.7b-instruct"
-        ;;
-    *)
-        echo "Invalid choice, using default"
-        MODEL="mistralai/Mistral-7B-Instruct-v0.1"
-        ;;
-esac
+if [[ -z "$choice" || ! "$choice" =~ ^[1-9][0-9]*$ || "$choice" -lt 1 || "$choice" -gt ${#AVAILABLE_MODELS[@]} ]]; then
+    MODEL="${AVAILABLE_MODELS[0]}"
+    echo "No valid choice, using default: $MODEL"
+else
+    MODEL="${AVAILABLE_MODELS[$((choice-1))]}"
+fi
 
-echo "Starting BaoAgent LLM server with model: $MODEL"
-python vllm_setup.py --model $MODEL
+echo "Starting Ollama with model: $MODEL"
+ollama run "$MODEL"

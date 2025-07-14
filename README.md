@@ -1,106 +1,76 @@
-# BaoAgent LLM Server
+# BaoAgent LLM Server (Ollama Edition)
 
-A high-performance Large Language Model server built with vLLM, providing OpenAI-compatible API endpoints for the BaoAgent ecosystem.
+A high-performance Large Language Model server built with [Ollama](https://ollama.com/), providing a simple HTTP API for the BaoAgent ecosystem.
 
 ## Features
 
-- **OpenAI-Compatible API**: Drop-in replacement for OpenAI's API endpoints
-- **High Performance**: Powered by vLLM for efficient inference
-- **Multiple Model Support**: Easy switching between different LLMs
-- **Production Ready**: Built with FastAPI and Uvicorn
-- **Easy Setup**: Automated scripts for quick deployment
+- **Ollama API**: Simple, local LLM server with HTTP API
+- **Multiple Model Support**: Easily switch between different LLMs (Llama 2, Mistral, etc.)
+- **Production Ready**: Runs on Mac (Apple Silicon or Intel), Linux, and Windows
+- **Easy Setup**: One-line install, no CUDA or GPU required
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
-- CUDA-compatible GPU (recommended)
+- macOS (Apple Silicon or Intel), Linux, or Windows
 - 8GB+ RAM (16GB+ recommended)
 
 ### Installation
 
-1. Clone and navigate to the baoagent-llm-server directory:
-```bash
-cd baoagent-llm-server
-```
+1. **Install Ollama:**
 
-2. Run the setup script:
-```bash
-chmod +x setup.sh
-./setup.sh
-```
+   ```bash
+   curl -fsSL https://ollama.com/install.sh | sh
+   # Or download from https://ollama.com/download
+   ```
 
-3. Start the server:
-```bash
-chmod +x scripts/start_server.sh
-./scripts/start_server.sh
-```
+2. **Start a model (e.g., Llama 2):**
 
-### Manual Installation
+   ```bash
+   ollama run llama2
+   # To see available models: ollama list
+   # To pull a new model: ollama pull mistral
+   ```
 
-If you prefer manual setup:
+3. **Start the BaoAgent LLM server script:**
 
-```bash
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start server with default model
-python vllm_setup.py
-```
+   ```bash
+   chmod +x scripts/start_server.sh
+   ./scripts/start_server.sh
+   ```
 
 ## Usage
 
 ### Starting the Server
 
-The server provides an interactive model selection menu:
-
-```bash
-./scripts/start_server.sh
-```
-
-Available models:
-1. **Mistral 7B Instruct** (default) - Great all-around model
-2. **Code Llama 7B** - Best for coding tasks  
-3. **Llama 2 7B Chat** - Meta's conversational model
-4. **DeepSeek Coder 6.7B** - Excellent for coding, Chinese-trained
+The server launches the selected Ollama model and keeps it running. You can change the model by editing `scripts/start_server.sh` or using the interactive prompt.
 
 ### API Endpoints
 
-Once running, the server provides OpenAI-compatible endpoints:
+Once running, the server provides the following endpoints (Ollama default):
 
-- **Chat Completions**: `http://localhost:8000/v1/chat/completions`
-- **Text Completions**: `http://localhost:8000/v1/completions`
-- **Models List**: `http://localhost:8000/v1/models`
+- **Generate:** `http://localhost:11434/api/generate`
+- **List Models:** `http://localhost:11434/api/tags`
 
 ### Example Usage
 
-#### Chat Completion
+#### Generate Completion
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "mistralai/Mistral-7B-Instruct-v0.1",
-    "messages": [
-      {"role": "user", "content": "Hello, how are you?"}
-    ],
-    "max_tokens": 100
-  }'
+curl http://localhost:11434/api/generate -d '{
+  "model": "llama2",
+  "prompt": "Hello, how are you?"
+}'
 ```
 
 #### Python Client
 ```python
 import requests
 
-response = requests.post("http://localhost:8000/v1/chat/completions", 
+response = requests.post("http://localhost:11434/api/generate", 
     json={
-        "model": "mistralai/Mistral-7B-Instruct-v0.1",
-        "messages": [{"role": "user", "content": "Hello from BaoAgent!"}],
-        "max_tokens": 100
+        "model": "llama2",
+        "prompt": "Hello from BaoAgent!"
     }
 )
 print(response.json())
@@ -108,23 +78,11 @@ print(response.json())
 
 ## Configuration
 
-### Command Line Options
-
-```bash
-python vllm_setup.py --help
-```
-
-Available options:
-- `--model`: Model to load (default: mistralai/Mistral-7B-Instruct-v0.1)
-- `--port`: Server port (default: 8000)
-- `--host`: Host to bind to (default: 0.0.0.0)
-- `--max-model-len`: Maximum model length (default: 4096)
-
-### Custom Model
-
-```bash
-python vllm_setup.py --model "your-custom-model" --port 8001
-```
+- Change the model by editing `scripts/start_server.sh` or running `ollama run <model>` manually.
+- To expose the server to a remote backend, use [ngrok](https://ngrok.com/) or similar:
+  ```bash
+  ngrok http 11434
+  ```
 
 ## Testing
 
@@ -136,8 +94,8 @@ chmod +x scripts/test_server.sh
 ```
 
 This will:
-- Check if the server is running
-- Test the chat completion endpoint
+- Check if the Ollama server is running
+- Test the generate endpoint
 - Verify API responses
 
 ## Directory Structure
@@ -145,22 +103,17 @@ This will:
 ```
 baoagent-llm-server/
 ├── README.md              # This file
-├── requirements.txt       # Python dependencies
-├── setup.sh              # Setup script
-├── vllm_setup.py         # Main server script
-├── models/               # Model storage (auto-created)
-└── scripts/
-    ├── start_server.sh   # Interactive server startup
-    └── test_server.sh    # Server testing script
+├── requirements.txt       # Python dependencies (optional, minimal for Ollama)
+├── scripts/
+│   ├── start_server.sh    # Ollama server startup script
+│   └── test_server.sh     # Server testing script
 ```
 
 ## Dependencies
 
-- **vLLM 0.3.0**: High-performance LLM inference engine
-- **FastAPI 0.104.1**: Modern web framework for APIs
-- **Uvicorn 0.24.0**: ASGI server implementation
-- **Pydantic 2.5.0**: Data validation and settings management
-- **python-multipart 0.0.6**: Multipart form data parsing
+- **Ollama**: Local LLM inference engine
+- **curl**: For API testing
+- **requests** (Python): For API integration (optional)
 
 ## Integration with BaoAgent
 
@@ -168,23 +121,21 @@ This server integrates seamlessly with the BaoAgent ecosystem:
 
 1. **Shared Client**: Use the `baoagent-llm-client` for standardized communication
 2. **Workflow Support**: Powers various BaoAgent workflows
-3. **API Consistency**: Maintains OpenAI compatibility for easy switching
+3. **API Simplicity**: Easy HTTP API for integration
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Out of Memory**: Reduce `--max-model-len` or use a smaller model
-2. **CUDA Not Available**: Server will fall back to CPU (slower)
-3. **Port Already in Use**: Change port with `--port` option
-4. **Model Download Fails**: Check internet connection and disk space
+1. **Out of Memory**: Use a smaller model
+2. **Port Already in Use**: Change port with `ollama serve --port <port>`
+3. **Model Download Fails**: Check internet connection and disk space
 
 ### Performance Tips
 
-- Use GPU for better performance
-- Increase `--max-model-len` for longer contexts
-- Consider model quantization for lower memory usage
-- Monitor GPU memory usage with `nvidia-smi`
+- Use Apple Silicon for best performance on Mac
+- Use smaller models for faster responses
+- Monitor memory usage with Activity Monitor or `htop`
 
 ## Contributing
 
@@ -208,4 +159,4 @@ For issues and support:
 
 ---
 
-**BaoAgent LLM Server** - High-performance LLM inference for the BaoAgent ecosystem
+**BaoAgent LLM Server (Ollama Edition)** - Local LLM inference for the BaoAgent ecosystem
