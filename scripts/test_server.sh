@@ -7,6 +7,9 @@ echo "🧪 Testing BaoAgent LLM Server (Ollama Edition)..."
 if curl -s http://localhost:11434/api/tags > /dev/null; then
     echo "✅ Ollama server is running"
     
+    # Test tags endpoint
+    echo "Testing tags endpoint..."
+    curl -s http://localhost:11434/api/tags
     # Test generate endpoint
     echo "Testing generate endpoint..."
     curl -s http://localhost:11434/api/generate -d '{
