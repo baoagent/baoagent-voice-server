@@ -1,0 +1,13 @@
+{
+    "contextFileName": "GEMINI.md",
+    "mcpServers": {
+        "filesystem": {
+        "command": "npx",
+        "args": [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "/Volumes/SSD/Desktop/baoagent/baoagent-voice-server"
+        ]
+        }
+    }
+}

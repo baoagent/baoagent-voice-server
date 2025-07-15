@@ -5,10 +5,6 @@ A voice AI server that integrates Twilio Voice with OpenAI's Realtime API to han
 ## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/twilio-voice-server
-cd twilio-voice-server
-
 # Install dependencies
 npm install
 
@@ -51,13 +47,6 @@ Phone Call → Twilio Voice → Voice Server → OpenAI Realtime API
 
 ## Installation
 
-### 1. Clone and Install
-```bash
-git clone https://github.com/your-username/twilio-voice-server
-cd twilio-voice-server
-npm install
-```
-
 ### 2. Environment Configuration
 ```bash
 cp .env.example .env
@@ -84,22 +73,21 @@ NODE_ENV=development
 ```
 
 ### 3. Local Development Setup
-```bash
-# Install ngrok for local testing
-npm install -g ngrok
 
-# Start the server
-npm run dev
-
-# In another terminal, expose your server
-ngrok http 8080
-```
+1.  **Download ngrok:** Visit the [ngrok website](https://ngrok.com/download) and download the appropriate version for your operating system.
+2.  **Unzip and install:** Unzip the downloaded file and place the `ngrok` executable in a directory that's in your system's PATH (e.g., `/usr/local/bin` on macOS/Linux, or a directory added to PATH on Windows).
+3.  **Connect your account:** If you have an ngrok account, connect it by running `ngrok authtoken <YOUR_AUTH_TOKEN>`. You can find your auth token on your ngrok dashboard. This step is optional but recommended for more features and longer tunnel durations.
+4.  **Start ngrok:** Once the voice server is running (which will be on port 8080 by default), you can expose it to the internet using ngrok. Open a new terminal window and run:
+    ```bash
+    ngrok http 8080
+    ```
+    This will give you a public URL (e.g., `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app`).
 
 ### 4. Configure Twilio Webhook
 In your Twilio Console:
 1. Go to Phone Numbers → Manage → Active Numbers
 2. Click your phone number
-3. Set Voice webhook URL to: `https://your-ngrok-url.ngrok.io/voice/incoming`
+3. Set Voice webhook URL to the ngrok public URL followed by `/voice/incoming`. For example: `https://xxxx-xxxx-xxxx-xxxx.ngrok-free.app/voice/incoming`.
 4. Set HTTP method to `POST`
 
 ## Core Components
@@ -131,14 +119,21 @@ In your Twilio Console:
 ```bash
 # Development mode with hot reload
 npm run dev
+```
 
-# Production mode
+To run the server in production mode, you will need to build the TypeScript files first:
+```bash
+npm run build
 npm start
+```
 
-# Run tests
+To run tests:
+```bash
 npm test
+```
 
-# Run with debug logging
+To run with debug logging:
+```bash
 DEBUG=* npm run dev
 ```
 

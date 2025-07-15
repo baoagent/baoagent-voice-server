@@ -1,0 +1,48 @@
+{
+  "name": "baoagent-voice-server",
+  "version": "1.0.0",
+  "description": "A voice AI server that integrates Twilio Voice with OpenAI's Realtime API to handle moving company bookings through natural phone conversations.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "twilio",
+    "openai",
+    "voice-ai",
+    "realtime-api",
+    "moving-company"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "alawmulaw": "^6.0.0",
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
+    "twilio": "^4.19.3",
+    "winston": "^3.17.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/helmet": "^0.0.48",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.14",
+    "@types/supertest": "^6.0.3",
+    "@types/ws": "^8.18.1",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3",
+    "ts-jest": "^29.4.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  }
+}
