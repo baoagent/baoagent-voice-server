@@ -6,6 +6,7 @@ const router: Router = express.Router();
 
 router.post('/incoming', (req: Request, res: Response) => {
   const twiml = new VoiceResponse();
+  twiml.say('Connected');
   const connect = twiml.connect();
   connect.stream({
     url: `wss://${req.headers.host}/media-stream`,

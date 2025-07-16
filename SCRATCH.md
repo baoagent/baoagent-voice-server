@@ -1,0 +1,1 @@
+Corrected `index.ts` to properly handle `streamSid` for `<Connect><Stream>` by capturing it from the `connected` event and using it consistently for session management and outbound audio.
