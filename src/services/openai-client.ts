@@ -74,11 +74,7 @@ class OpenAIClient {
         }
       }
       this.ws?.send(JSON.stringify({
-        "type": "conversation.item.create",
-        "item": {
-          "type": "text",
-          "text": ""
-        }
+        "type": "response.create"
       }));
     };
 
