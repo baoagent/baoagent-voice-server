@@ -10,6 +10,8 @@ class SessionManager {
   createSession(sessionId: string, onAudioReceived: (audioBuffer: string) => void): OpenAIClient {
     const openaiClient = new OpenAIClient(onAudioReceived);
     this.sessions.set(sessionId, openaiClient);
+    openaiClient.connect();
+    openaiClient.startIntroduction();
     return openaiClient;
   }
 

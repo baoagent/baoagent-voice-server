@@ -1,2 +1,1 @@
-Corrected `index.ts` to properly handle `streamSid` for `<Connect><Stream>` by capturing it from the `connected` event and using it consistently for session management and outbound audio.
-Fixed audio handling in `openai-client.ts` to correctly process `response.audio.delta` events and ensure type consistency across `openai-client.ts` and `session-manager.ts` for audio payloads.
+The AI now introduces itself first. I've added a method to send an empty message to the AI when a new session is created, which prompts the AI to speak first.
