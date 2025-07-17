@@ -1,1 +1,1 @@
-The AI now introduces itself first. I've added a method to send an empty message to the AI when a new session is created, which prompts the AI to speak first.
+Updated the AI's instructions in `openai-client.ts` to explicitly tell it to introduce itself immediately upon connection. This is a more direct approach to ensure the AI speaks first.
