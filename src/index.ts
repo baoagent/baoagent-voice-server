@@ -55,7 +55,7 @@ interface StopMessage {
   };
 }
 
-type TwilioMessage = ConnectedMessage | StartMessage | MediaMessage | StopMessage | { event: string; [key: string]: any };
+type TwilioMessage = ConnectedMessage | StartMessage | MediaMessage | StopMessage | { event: string;[key: string]: any };
 
 const sessionManager = new SessionManager();
 
@@ -78,7 +78,7 @@ server.listen(PORT, () => {
 });
 
 wss.on('connection', (ws: WebSocket) => {
-  logger.info('New WebSocket connection');
+  logger.info('New WebSocket connection from Twilio');
   let currentStreamSid: string | null = null;
 
   ws.on('message', (message: WebSocket.RawData) => {
@@ -89,30 +89,25 @@ wss.on('connection', (ws: WebSocket) => {
         case 'connected':
           // For <Connect><Stream>, the streamSid is in the connected event
           currentStreamSid = (msg as ConnectedMessage).streamSid;
-          logger.info(`Twilio WebSocket connected. Stream SID: ${currentStreamSid}`);
+          logger.debug(`Twilio WebSocket connected. Stream SID: ${currentStreamSid}`);
           break;
         case 'start':
           // For <Start><Stream>, the streamSid is in the start event
           currentStreamSid = (msg as StartMessage).start.streamSid;
-          logger.info(`Media stream started for call ${(msg as StartMessage).start.callSid}. Stream SID: ${currentStreamSid}`);
+          logger.debug(`Media stream started for call ${(msg as StartMessage).start.callSid}. Stream SID: ${currentStreamSid}`);
           const openaiClient = sessionManager.createSession(currentStreamSid, (
             (audioPayloadBase64: string) => {
               const mediaPayload = JSON.stringify({
                 streamSid: currentStreamSid,
                 event: 'media',
                 media: {
-                  payload: audioPayloadBase64
+                  payload: audioPayloadBase64,
+                  track: 'outbound_track'
                 }
               });
-              logger.info(`Sending media payload to Twilio: ${mediaPayload}`);
+              logger.debug(`Received audio from OpenAI for Twilio. Payload length: ${audioPayloadBase64.length}`);
+              logger.debug(`Sending media payload to Twilio: ${mediaPayload}`);
               ws.send(mediaPayload);
-
-              const markPayload = JSON.stringify({
-                streamSid: currentStreamSid,
-                event: 'mark'
-              });
-              logger.info(`Sending mark payload to Twilio: ${markPayload}`);
-              ws.send(markPayload);
             }));
           openaiClient.connect();
           break;
@@ -120,6 +115,7 @@ wss.on('connection', (ws: WebSocket) => {
           if (currentStreamSid) {
             const openaiClient = sessionManager.getSession(currentStreamSid);
             if (openaiClient) {
+              logger.debug(`Received media from Twilio for stream SID: ${currentStreamSid}`);
               openaiClient.send((msg as MediaMessage).media.payload);
             }
           }

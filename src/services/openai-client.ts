@@ -6,12 +6,14 @@ import MCPClient from './mcp-client';
 class OpenAIClient {
   private ws: WebSocket | null = null;
   private readonly openaiRealtimeUrl: string;
-  private onAudioReceived: ((audioBuffer: Buffer) => void) | null = null;
+  private onAudioReceived: ((audioBuffer: string) => void) | null = null;
   private mcpClient: MCPClient;
   private audioBufferQueue: string[] = [];
   private sendCounter: number = 0;
+  private isOutputAudioFormatReady: boolean = false;
+  private audioOutputBufferQueue: string[] = [];
 
-  constructor(onAudioReceived: (audioBuffer: Buffer) => void) {
+  constructor(onAudioReceived: (audioBuffer: string) => void) {
     this.openaiRealtimeUrl = process.env.OPENAI_REALTIME_URL || 'wss://api.openai.com/v1/realtime';
     this.onAudioReceived = onAudioReceived;
     this.mcpClient = new MCPClient();
@@ -75,9 +77,13 @@ class OpenAIClient {
 
     this.ws.onmessage = async (event) => {
       const message = JSON.parse(event.data.toString());
-      if (message.audio_chunk) {
-        // OpenAI is sending g711_ulaw (mulaw) as base64 string, which Twilio can directly consume.
-        this.onAudioReceived?.(message.audio_chunk);
+      if (message.type === 'response.audio.delta') {
+        const audioDelta = message.delta;
+        if (this.isOutputAudioFormatReady) {
+          this.onAudioReceived?.(audioDelta);
+        } else {
+          this.audioOutputBufferQueue.push(audioDelta);
+        }
       } else if (message.tool_calls) {
         for (const toolCall of message.tool_calls) {
           if (toolCall.function.name === 'invoke_mcp_tool') {
@@ -109,6 +115,15 @@ class OpenAIClient {
             }
           }
         }
+      } else if (message.type === 'session.updated' && message.session?.output_audio_format === 'g711_ulaw') {
+        logger.info('OpenAI output audio format confirmed as g711_ulaw. Starting to send buffered audio.');
+        this.isOutputAudioFormatReady = true;
+        while (this.audioOutputBufferQueue.length > 0) {
+          const audio = this.audioOutputBufferQueue.shift();
+          if (audio) {
+            this.onAudioReceived?.(audio);
+          }
+        }
       } else {
         logger.info('Received from OpenAI:', message);
       }
@@ -130,13 +145,17 @@ class OpenAIClient {
         logger.info(`Actually sending audio to OpenAI. Sent ${this.sendCounter} packets.`);
       }
       // Twilio sends mulaw audio, which OpenAI can directly consume when configured for g711_ulaw.
+      if (mulawAudioPayload === undefined || mulawAudioPayload === null) {
+        logger.error('Attempted to send undefined or null audio payload to OpenAI.');
+        return;
+      }
+      logger.debug(`Sending audio payload to OpenAI. Type: ${typeof mulawAudioPayload}, Length: ${mulawAudioPayload.length}`);
       const event = {
         "type": "input_audio_buffer.append",
         "audio": mulawAudioPayload
       };
       this.ws.send(JSON.stringify(event));
     } else {
-      logger.warn('OpenAI WebSocket not open. Buffering audio.');
       this.audioBufferQueue.push(mulawAudioPayload);
     }
   }

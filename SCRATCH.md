@@ -1,1 +1,2 @@
 Corrected `index.ts` to properly handle `streamSid` for `<Connect><Stream>` by capturing it from the `connected` event and using it consistently for session management and outbound audio.
+Fixed audio handling in `openai-client.ts` to correctly process `response.audio.delta` events and ensure type consistency across `openai-client.ts` and `session-manager.ts` for audio payloads.

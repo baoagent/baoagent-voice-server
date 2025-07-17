@@ -7,7 +7,7 @@ class SessionManager {
     this.sessions = new Map<string, OpenAIClient>();
   }
 
-  createSession(sessionId: string, onAudioReceived: (audioBuffer: Buffer) => void): OpenAIClient {
+  createSession(sessionId: string, onAudioReceived: (audioBuffer: string) => void): OpenAIClient {
     const openaiClient = new OpenAIClient(onAudioReceived);
     this.sessions.set(sessionId, openaiClient);
     return openaiClient;
