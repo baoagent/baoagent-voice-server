@@ -95,6 +95,14 @@ wss.on('connection', (ws: WebSocket) => {
           // For <Start><Stream>, the streamSid is in the start event
           currentStreamSid = (msg as StartMessage).start.streamSid;
           logger.debug(`Media stream started for call ${(msg as StartMessage).start.callSid}. Stream SID: ${currentStreamSid}`);
+          
+          // Create call termination handler
+          const handleCallTermination = () => {
+            logger.info(`Terminating call for security reasons. Stream SID: ${currentStreamSid}`);
+            // Close the WebSocket connection to end the call
+            ws.close();
+          };
+          
           const openaiClient = sessionManager.createSession(currentStreamSid, (
             (audioPayloadBase64: string) => {
               const mediaPayload = JSON.stringify({
@@ -108,7 +116,7 @@ wss.on('connection', (ws: WebSocket) => {
               logger.debug(`Received audio from OpenAI for Twilio. Payload length: ${audioPayloadBase64.length}`);
               logger.debug(`Sending media payload to Twilio: ${mediaPayload}`);
               ws.send(mediaPayload);
-            }));
+            }), handleCallTermination);
           openaiClient.connect();
           break;
         case 'media':
