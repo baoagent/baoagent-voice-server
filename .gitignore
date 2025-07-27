@@ -1,3 +1,10 @@
+#install & build packages
+
 node_modules
+dist/
+
+
+# security
+instance-ssh-keys/
 .env
 .env.example
