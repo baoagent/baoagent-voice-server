@@ -32,7 +32,7 @@ class OpenAIClient {
       },
     };
 
-    const urlWithModel = `${this.openaiRealtimeUrl}?model=gpt-4o-realtime-preview`;
+    const urlWithModel = `${this.openaiRealtimeUrl}?model=gpt-4o-mini-realtime-preview`;
     this.ws = new WebSocket(urlWithModel, options);
 
     this.ws.onopen = () => {
