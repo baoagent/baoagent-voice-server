@@ -51,21 +51,63 @@ class OpenAIClient {
           "tools": [
             {
               "type": "function",
-              "name": "invoke_mcp_tool",
-              "description": "Invokes a tool on the MCP server.",
-              "parameters": {
-                "type": "object",
-                "properties": {
-                  "tool_name": {
-                    "type": "string",
-                    "description": "The name of the tool to invoke."
+              "function": {
+                "name": "create_appointment",
+                "description": "Creates a new moving appointment.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "customer_phone": { "type": "string" },
+                    "customer_name": { "type": "string" },
+                    "appointment_date": { "type": "string", "description": "Date of the appointment in YYYY-MM-DD format." },
+                    "appointment_time": { "type": "string", "description": "Time of the appointment in HH:MM format." },
+                    "origin_address": { "type": "string" },
+                    "destination_address": { "type": "string" }
                   },
-                  "tool_arguments": {
-                    "type": "object",
-                    "description": "The arguments to pass to the tool."
-                  }
-                },
-                "required": ["tool_name", "tool_arguments"]
+                  "required": ["customer_phone", "customer_name", "appointment_date", "appointment_time", "origin_address", "destination_address"]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "check_availability",
+                "description": "Checks for available appointment slots on a given date.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "date": { "type": "string", "description": "Date to check in YYYY-MM-DD format." }
+                  },
+                  "required": ["date"]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "get_appointments_by_phone",
+                "description": "Retrieves all appointments for a given phone number.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "phone_number": { "type": "string" }
+                  },
+                  "required": ["phone_number"]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "cancel_appointment",
+                "description": "Cancels an appointment with a given ID.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "appointment_id": { "type": "number" }
+                  },
+                  "required": ["appointment_id"]
+                }
               }
             }
           ]
@@ -141,33 +183,32 @@ class OpenAIClient {
         }
       } else if (message.tool_calls) {
         for (const toolCall of message.tool_calls) {
-          if (toolCall.function.name === 'invoke_mcp_tool') {
-            const { tool_name, tool_arguments } = toolCall.function.arguments;
-            try {
-              const result = await this.mcpClient.invokeTool(tool_name, tool_arguments);
-              this.ws?.send(JSON.stringify({
-                "type": "conversation.item.create",
-                "item": {
-                  "type": "function_call_output",
-                  "call_id": toolCall.id,
-                  "output": JSON.stringify(result)
-                }
-              }));
-            } catch (error: unknown) {
-              console.error('Error invoking MCP tool:', error);
-              let errorMessage = 'Unknown error';
-              if (error instanceof Error) {
-                errorMessage = error.message;
+          const toolName = toolCall.function.name;
+          const toolArguments = toolCall.function.arguments;
+          try {
+            const result = await this.mcpClient.invokeTool(toolName, toolArguments);
+            this.ws?.send(JSON.stringify({
+              "type": "conversation.item.create",
+              "item": {
+                "type": "function_call_output",
+                "call_id": toolCall.id,
+                "output": JSON.stringify(result)
               }
-              this.ws?.send(JSON.stringify({
-                "tool_outputs": [
-                  {
-                    "tool_call_id": toolCall.id,
-                    "output": JSON.stringify({ error: errorMessage })
-                  }
-                ]
-              }));
+            }));
+          } catch (error: unknown) {
+            console.error(`Error invoking tool '${toolName}':`, error);
+            let errorMessage = 'Unknown error';
+            if (error instanceof Error) {
+              errorMessage = error.message;
             }
+            this.ws?.send(JSON.stringify({
+              "tool_outputs": [
+                {
+                  "tool_call_id": toolCall.id,
+                  "output": JSON.stringify({ error: errorMessage })
+                }
+              ]
+            }));
           }
         }
       } else if (message.type === 'session.updated' && message.session?.output_audio_format === 'g711_ulaw') {
